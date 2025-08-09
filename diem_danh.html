@@ -10,11 +10,18 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .rotated-text {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+        th, td {
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
     <div class="container mx-auto p-6 bg-white rounded-xl shadow-lg w-full max-w-6xl">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Dữ liệu từ Google Apps Script</h1>
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Bảng Điểm Danh Chi Tiết</h1>
 
         <!-- Khu vực bộ lọc -->
         <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -83,8 +90,7 @@
             // Hàm để điền dữ liệu cho các bộ lọc
             function populateFilters(data) {
                 // Lọc và điền dữ liệu cho dropdown Năm tháng
-                const dates = [...new Set(data.map(item => item['Date']))];
-                dates.sort().reverse(); // Sắp xếp từ Z đến A
+                const dates = [...new Set(data.map(item => item['Date']))].sort().reverse();
                 dates.forEach(date => {
                     const option = document.createElement('option');
                     option.value = date;
@@ -116,13 +122,8 @@
                 const studentFilter = filterStudentInput.value.toLowerCase().trim();
 
                 const filteredData = originalData.filter(row => {
-                    // Lọc theo Năm tháng (YYYY/MM)
                     const dateMatch = !dateFilter || row['Date'] === dateFilter;
-
-                    // Lọc theo Võ đường
                     const dojoMatch = !dojoFilter || row['Võ đường'] === dojoFilter;
-
-                    // Lọc theo Học viên
                     const studentMatch = !studentFilter || row['Học viên'].toLowerCase().includes(studentFilter);
                     
                     return dateMatch && dojoMatch && studentMatch;
@@ -138,29 +139,94 @@
                     return;
                 }
 
+                // Xử lý dữ liệu để tạo bảng chi tiết
+                const processedData = processData(data);
+                
                 let html = '<table class="min-w-full bg-white rounded-lg">';
 
                 // Tạo tiêu đề bảng (header)
-                const headers = Object.keys(data[0]);
                 html += '<thead><tr class="bg-blue-600 text-white">';
-                headers.forEach(header => {
-                    html += `<th class="py-3 px-4 text-left font-semibold">${header}</th>`;
-                });
+                html += '<th class="py-3 px-4 text-left font-semibold">TT</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Năm tháng</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Tên học viên</th>';
+                for (let i = 1; i <= 31; i++) {
+                    html += `<th class="py-3 px-2 font-semibold text-center">${i}</th>`;
+                }
+                html += '<th class="py-3 px-4 text-left font-semibold">Đến muộn</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Học đúng giờ</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Về chùa công quả</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Nghi phép</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Không Phép</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Vắng mặt</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Học thử</th>';
+                html += '<th class="py-3 px-4 text-left font-semibold">Nghỉ hẳn</th>';
                 html += '</tr></thead>';
 
                 // Tạo nội dung bảng (body)
                 html += '<tbody>';
-                data.forEach((row, index) => {
+                processedData.forEach((row, index) => {
                     const rowClass = index % 2 === 0 ? 'bg-gray-100' : 'bg-white';
                     html += `<tr class="${rowClass} hover:bg-gray-200 transition-colors duration-200">`;
-                    headers.forEach(header => {
-                        html += `<td class="py-3 px-4 border-b border-gray-200">${row[header]}</td>`;
-                    });
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${index + 1}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Năm tháng']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Tên học viên']}</td>`;
+                    for (let i = 1; i <= 31; i++) {
+                        const dayStatus = row.days[i] ? row.days[i] : '';
+                        html += `<td class="py-3 px-2 border-b border-gray-200 text-center">${dayStatus}</td>`;
+                    }
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Đến muộn']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Học đúng giờ']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Về chùa công quả']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Nghi phép']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Không Phép']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Vắng mặt']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Học thử']}</td>`;
+                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Nghỉ hẳn']}</td>`;
                     html += '</tr>';
                 });
                 html += '</tbody>';
                 html += '</table>';
                 dataContainer.innerHTML = html;
+            }
+
+            // Hàm xử lý dữ liệu để tạo bảng chi tiết
+            function processData(data) {
+                const detailedData = {};
+                
+                data.forEach(item => {
+                    const date = item['Date'];
+                    const studentName = item['Học viên'];
+                    const key = `${date}-${studentName}`;
+
+                    if (!detailedData[key]) {
+                        detailedData[key] = {
+                            'Năm tháng': date,
+                            'Tên học viên': studentName,
+                            'Đến muộn': 0,
+                            'Học đúng giờ': 0,
+                            'Về chùa công quả': 0,
+                            'Nghi phép': 0,
+                            'Không Phép': 0,
+                            'Vắng mặt': 0,
+                            'Học thử': 0,
+                            'Nghỉ hẳn': 0,
+                            'days': {}
+                        };
+                    }
+
+                    const status = item['Trạng thái'];
+                    const day = item['Ngày'];
+
+                    // Cập nhật trạng thái cho ngày cụ thể
+                    detailedData[key].days[day] = status;
+
+                    // Tăng số lượng cho trạng thái tương ứng
+                    if (status) {
+                        detailedData[key][status] = (detailedData[key][status] || 0) + 1;
+                    }
+                });
+                
+                return Object.values(detailedData);
             }
 
             // Thêm sự kiện lắng nghe cho các bộ lọc
