@@ -18,8 +18,8 @@
         }
 
         .a4-container {
-            width: 210mm;
-            min-height: 297mm;
+            width: 297mm; /* A4 landscape width */
+            min-height: 210mm; /* A4 landscape height */
             max-width: 100%;
             margin: 0 auto;
             background: white;
@@ -37,7 +37,7 @@
         }
 
         .header h1 {
-            font-size: 18px;
+            font-size: 20px;
             color: #4f46e5;
             margin-bottom: 5px;
             font-weight: 700;
@@ -186,12 +186,12 @@
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
+            font-size: 10px;
         }
 
         .attendance-table th,
         .attendance-table td {
-            padding: 3px 2px;
+            padding: 4px 3px;
             text-align: center;
             border: 0.5px solid #d1d5db;
             line-height: 1.2;
@@ -209,22 +209,22 @@
         .student-header {
             background: #4f46e5 !important;
             color: white !important;
-            width: 25px;
-            font-size: 8px;
+            width: 30px;
+            font-size: 9px;
         }
 
         .name-header {
             background: #4f46e5 !important;
             color: white !important;
-            width: 100px;
+            width: 120px;
             text-align: left !important;
-            padding-left: 6px !important;
-            font-size: 8px;
+            padding-left: 8px !important;
+            font-size: 9px;
         }
 
         .day-header {
-            width: 14px;
-            font-size: 7px;
+            width: 18px;
+            font-size: 8px;
             background: #e5e7eb !important;
         }
 
@@ -235,8 +235,8 @@
         }
 
         .weekday-row th {
-            font-size: 6px;
-            padding: 1px;
+            font-size: 7px;
+            padding: 2px;
             background: #f3f4f6 !important;
             color: #6b7280;
         }
@@ -248,8 +248,8 @@
         }
 
         .status-header {
-            width: 35px;
-            font-size: 7px;
+            width: 45px;
+            font-size: 8px;
             writing-mode: vertical-rl;
             text-orientation: mixed;
             background: #f59e0b !important;
@@ -266,24 +266,24 @@
 
         .name-cell {
             text-align: left !important;
-            padding-left: 6px !important;
+            padding-left: 8px !important;
             font-weight: 500;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .student-cell {
             font-weight: 600;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .attendance-cell {
             font-weight: bold;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         .stat-cell {
             font-weight: 600;
-            font-size: 8px;
+            font-size: 9px;
         }
 
         /* Trạng thái điểm danh */
@@ -311,7 +311,7 @@
 
         .legend-items {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(8, 1fr);
             gap: 5px;
         }
 
@@ -332,7 +332,7 @@
         .statistics {
             margin-top: 10px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 8px;
             border-top: 1px solid #e5e7eb;
             padding-top: 8px;
@@ -390,9 +390,14 @@
             .btn, .multi-select-dropdown {
                 display: none !important;
             }
+            
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1200px) {
             .a4-container {
                 padding: 10px;
                 width: 100%;
@@ -411,7 +416,11 @@
             }
             
             .legend-items {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .statistics {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -652,7 +661,7 @@
                 originalData = [...sampleData];
                 filteredData = [...originalData];
                 
-                // Set default current year-month
+                // Set default current year-month and auto apply filter
                 const now = new Date();
                 const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                 selectedYearMonths = [currentYearMonth];
@@ -660,7 +669,9 @@
                 populateYearMonthFilter();
                 populateDojoFilter();
                 populateStudentFilter();
-                renderTable(filteredData);
+                
+                // Automatically apply filters with current month
+                applyFilters();
             }, 500);
         }
 
@@ -669,6 +680,11 @@
             originalData.forEach(student => {
                 if (student.yearMonth) yearMonthSet.add(student.yearMonth);
             });
+            
+            // Add current year-month if not in data
+            const now = new Date();
+            const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            yearMonthSet.add(currentYearMonth);
             
             const dropdown = document.querySelector('#yearMonthMultiSelect .multi-select-dropdown');
             dropdown.innerHTML = '';
@@ -836,24 +852,3 @@
         function showLoading() {
             document.getElementById('content').innerHTML = `
                 <div class="loading">
-                    <p>⏳ Đang tải dữ liệu...</p>
-                </div>
-            `;
-        }
-
-        function getWeekdayName(date) {
-            const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-            return weekdays[date.getDay()];
-        }
-
-        function renderTable(data) {
-            if (!Array.isArray(data) || data.length === 0) {
-                document.getElementById('content').innerHTML = `
-                    <div class="error">
-                        <p>📭 Không có dữ liệu phù hợp với bộ lọc</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const dayHeaders = Array.from({length: 31}, (_,
