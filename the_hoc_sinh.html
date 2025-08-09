@@ -17,6 +17,32 @@
     /* Zoom to display larger on screen */
     zoom: 1.5;
   }
+
+  /* CSS cho in ấn - đảm bảo không cắt xén */
+  @media print {
+    body {
+      zoom: 1; /* Reset zoom khi in */
+      background-color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .id-card-container {
+      padding: 10px;
+      box-shadow: none;
+      page-break-inside: avoid;
+    }
+    
+    .action-buttons {
+      display: none; /* Ẩn nút khi in */
+    }
+    
+    .id-card {
+      box-shadow: none;
+      border: 1px solid #000;
+      page-break-inside: avoid;
+    }
+  }
   .id-card-container {
     padding: 20px;
     background-color: #fff;
@@ -69,22 +95,26 @@
     flex-grow: 1;
     background-color: #fff;
     color: #333;
-    padding: 10px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     text-align: center;
+    min-height: 4cm; /* Đảm bảo có đủ không gian */
   }
   .full-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    overflow-wrap: break-word;
   }
   .info-details {
-    font-size: 12px;
-    line-height: 1.4;
-    margin-bottom: 10px;
+    font-size: 11px;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    flex-shrink: 0;
   }
   .info-details p {
     margin: 2px 0;
@@ -96,22 +126,29 @@
   .student-id-qr-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; /* Căn giữa theo chiều dọc */
     width: 100%;
     margin-top: auto;
-    padding-top: 5px;
+    padding: 3px;
+    gap: 3px; /* Khoảng cách giữa mã học sinh và QR */
   }
   .student-id {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
     text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    max-width: calc(100% - 2.2cm); /* Đảm bảo không chèn lên QR code */
   }
   .qr-code-container {
-    padding: 0;
+    flex-shrink: 0; /* Ngăn QR code bị co lại */
   }
   .qr-code-container img {
-    width: 80px; /* Cập nhật kích thước QR code để không bị cắt */
-    height: 80px; /* Cập nhật kích thước QR code để không bị cắt */
+    width: 2cm !important; /* Cố định kích thước QR code là 2cm */
+    height: 2cm !important; /* Cố định kích thước QR code là 2cm */
+    object-fit: contain; /* Đảm bảo QR code không bị méo */
   }
   .action-buttons {
     margin-top: 20px;
@@ -151,16 +188,16 @@
 
     <!-- Phần thông tin và mã QR -->
     <div class="info-container">
-      <p class="full-name" id="full-name-field">HỌ VÀ TÊN</p>
+      <p class="full-name" id="full-name-field">NGUYỄN VĂN AN</p>
       <div class="info-details">
-        <p id="dob-field">[Năm sinh]</p>
-        <p id="phone-field">[Số điện thoại]</p>
-        <p class="gym-name" id="gym-field">[VÕ ĐƯỜNG]</p>
+        <p id="dob-field">Sinh năm: 1995</p>
+        <p id="phone-field">SĐT: 0912345678</p>
+        <p class="gym-name" id="gym-field">VÕ ĐƯỜNG THIẾU LÂM</p>
       </div>
       <div class="student-id-qr-row">
-        <p class="student-id" id="student-id-field">[MÃ HỌC SINH]</p>
+        <p class="student-id" id="student-id-field">HV001234</p>
         <div class="qr-code-container">
-          <img id="qr-code" src="https://via.placeholder.com/100/fff/000?text=QR" alt="Mã QR">
+          <img id="qr-code" src="https://via.placeholder.com/200/fff/000?text=QR" alt="Mã QR">
         </div>
       </div>
     </div>
