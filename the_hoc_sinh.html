@@ -3,6 +3,7 @@
 <head>
 <title>Thẻ Học Viên</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   body {
     font-family: Arial, sans-serif;
@@ -12,6 +13,7 @@
     min-height: 100vh;
     margin: 0;
     background-color: #f0f0f0;
+    flex-direction: column;
   }
   .id-card-container {
     padding: 20px;
@@ -100,39 +102,123 @@
     width: 60px;
     height: 60px;
   }
+  .action-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  .action-buttons button {
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  #print-btn {
+    background-color: #007bff;
+  }
+  #download-btn {
+    background-color: #28a745;
+  }
 </style>
 </head>
 <body>
 
-<div class="id-card-container">
+<div class="id-card-container" id="id-card-content">
   <div class="id-card">
     <!-- Logo công ty ở góc trên bên trái -->
     <div class="logo-top-left">
-      <img src="https://via.placeholder.com/50/fff/000?text=Logo" alt="Logo công ty">
+      <img id="logo-image" src="https://via.placeholder.com/50/fff/000?text=Logo" alt="Logo công ty">
     </div>
 
     <!-- Phần ảnh của học viên -->
     <div class="photo-section">
-      <img src="https://placehold.co/300x400/cccccc/333333?text=Ảnh+3x4" alt="Ảnh học viên">
+      <img id="student-photo" src="https://placehold.co/300x400/cccccc/333333?text=Ảnh+3x4" alt="Ảnh học viên">
     </div>
 
     <!-- Phần thông tin và mã QR -->
     <div class="info-container">
-      <p class="full-name">HỌ VÀ TÊN</p>
+      <p class="full-name" id="full-name-field">HỌ VÀ TÊN</p>
       <div class="info-details">
-        <p>[Năm sinh]</p>
-        <p>[Số điện thoại]</p>
-        <p>[Võ đường]</p>
+        <p id="dob-field">[Năm sinh]</p>
+        <p id="phone-field">[Số điện thoại]</p>
+        <p id="gym-field">[Võ đường]</p>
       </div>
       <div class="student-id-qr-row">
-        <p class="student-id">[MÃ HỌC SINH]</p>
+        <p class="student-id" id="student-id-field">[MÃ HỌC SINH]</p>
         <div class="qr-code-container">
-          <img src="https://via.placeholder.com/100/fff/000?text=QR" alt="Mã QR">
+          <img id="qr-code" src="https://via.placeholder.com/100/fff/000?text=QR" alt="Mã QR">
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<div class="action-buttons">
+  <button id="print-btn" onclick="window.print()">In PDF</button>
+  <button id="download-btn">Tải PDF</button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Function to get a parameter and decode it
+        const getUrlParam = (param) => {
+            const value = urlParams.get(param);
+            return value ? decodeURIComponent(value) : null;
+        };
+
+        // Lấy dữ liệu từ URL và cập nhật nội dung
+        const fullName = getUrlParam('fullName');
+        if (fullName) {
+            document.getElementById('full-name-field').textContent = fullName.toUpperCase();
+        }
+
+        const studentId = getUrlParam('studentId');
+        if (studentId) {
+            document.getElementById('student-id-field').textContent = studentId;
+        }
+
+        const dob = getUrlParam('dob');
+        if (dob) {
+            document.getElementById('dob-field').textContent = dob;
+        }
+
+        const phone = getUrlParam('phone');
+        if (phone) {
+            document.getElementById('phone-field').textContent = phone;
+        }
+
+        const gym = getUrlParam('gym');
+        if (gym) {
+            document.getElementById('gym-field').textContent = gym;
+        }
+
+        const photoUrl = getUrlParam('photo');
+        if (photoUrl) {
+            document.getElementById('student-photo').src = photoUrl;
+        }
+
+        const qrUrl = getUrlParam('qr');
+        if (qrUrl) {
+            document.getElementById('qr-code').src = qrUrl;
+        }
+
+        const logoUrl = getUrlParam('logo');
+        if (logoUrl) {
+            document.getElementById('logo-image').src = logoUrl;
+        }
+
+        // Tải PDF khi nhấn nút
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const element = document.getElementById('id-card-content');
+            html2pdf().from(element).save('the_hoc_vien.pdf');
+        });
+    });
+</script>
 
 </body>
 </html>
