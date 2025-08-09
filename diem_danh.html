@@ -3,240 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Điểm danh</title>
+    <title>Dữ Liệu Từ Google Apps Script</title>
+    <!-- Tải Tailwind CSS để tạo kiểu dáng hiện đại -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cấu hình phông chữ Inter mặc định -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .rotated-text {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-        }
-        th, td {
-            white-space: nowrap;
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-    <div class="container mx-auto p-6 bg-white rounded-xl shadow-lg w-full max-w-6xl">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Bảng Điểm Danh Chi Tiết</h1>
+<body class="bg-gray-100 text-gray-800 p-4">
 
-        <!-- Khu vực bộ lọc -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label for="filter-date" class="block text-sm font-medium text-gray-700">Năm tháng</label>
-                <select id="filter-date"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                    <option value="">-- Tất cả Năm tháng --</option>
-                </select>
-            </div>
-            <div>
-                <label for="filter-dojo" class="block text-sm font-medium text-gray-700">Võ đường</label>
-                <select id="filter-dojo"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-                    <option value="">-- Tất cả Võ đường --</option>
-                </select>
-            </div>
-            <div>
-                <label for="filter-student" class="block text-sm font-medium text-gray-700">Học viên</label>
-                <input type="text" id="filter-student" placeholder="Nhập tên học viên..."
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-            </div>
-        </div>
+    <!-- Tiêu đề và mô tả -->
+    <div class="max-w-4xl mx-auto my-8">
+        <h1 class="text-3xl font-bold text-center text-gray-900 mb-2">Dữ Liệu Web App</h1>
+        <p class="text-center text-gray-600">Dữ liệu được lấy trực tiếp từ Google Apps Script.</p>
+    </div>
 
-        <div id="loading" class="text-center text-gray-500 mb-4">Đang tải dữ liệu...</div>
-        <div id="data-container" class="overflow-x-auto rounded-lg shadow-inner">
-            <!-- Dữ liệu sẽ được hiển thị ở đây -->
-        </div>
-        <div id="error-message" class="hidden text-center text-red-500 mt-4 font-semibold">
-            Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.
-        </div>
+    <!-- Container cho bảng dữ liệu -->
+    <div id="data-container" class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
+        <p id="loading-message" class="p-4 text-center text-gray-500">Đang tải dữ liệu...</p>
     </div>
 
     <script>
+        // URL của Google Apps Script để lấy dữ liệu
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwq_DySMqTNVBalJDUUQ2QMSxQO0A5SXXv51BFqqZPezbKKCjmtFdjqfkInbzkgYXdm/exec";
+        
+        // Chờ DOM load hoàn toàn trước khi thực thi script
         document.addEventListener('DOMContentLoaded', () => {
+            fetchDataAndRenderTable();
+        });
+
+        /**
+         * Lấy dữ liệu từ Apps Script và hiển thị thành bảng.
+         */
+        async function fetchDataAndRenderTable() {
             const dataContainer = document.getElementById('data-container');
-            const loadingIndicator = document.getElementById('loading');
-            const errorMessage = document.getElementById('error-message');
-            // Cập nhật URL webapp mới
-            const url = 'https://script.google.com/macros/s/AKfycbwx3TSJYH5WVZP5lE-fqeUx2N-gkIxDi9Ljzb4ZRlVmxlu-8iaZ8pZWRzGSVCmlzk_i/exec';
-
-            // Các phần tử lọc
-            const filterDateSelect = document.getElementById('filter-date');
-            const filterDojoSelect = document.getElementById('filter-dojo');
-            const filterStudentInput = document.getElementById('filter-student');
-            let originalData = [];
-
-            // Hàm để lấy dữ liệu từ API
-            async function fetchData() {
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    const data = await response.json();
-                    originalData = data; // Lưu trữ dữ liệu gốc
-                    populateFilters(data);
-                    filterData(); // Hiển thị dữ liệu lần đầu
-                } catch (error) {
-                    console.error('Lỗi khi lấy dữ liệu:', error);
-                    loadingIndicator.classList.add('hidden');
-                    errorMessage.classList.remove('hidden');
+            const loadingMessage = document.getElementById('loading-message');
+            
+            try {
+                // Sử dụng fetch() để gọi API
+                const response = await fetch(SCRIPT_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            }
+                
+                const data = await response.json();
 
-            // Hàm để điền dữ liệu cho các bộ lọc
-            function populateFilters(data) {
-                // Lọc và điền dữ liệu cho dropdown Năm tháng
-                const dates = [...new Set(data.map(item => item['Date']))].sort().reverse();
-                dates.forEach(date => {
-                    const option = document.createElement('option');
-                    option.value = date;
-                    option.textContent = date;
-                    filterDateSelect.appendChild(option);
-                });
-
-                // Tự động chọn năm tháng hiện tại
-                const now = new Date();
-                const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
-                const currentDateString = `${now.getFullYear()}/${currentMonth}`;
-                filterDateSelect.value = currentDateString;
-
-                // Lọc và điền dữ liệu cho dropdown Võ đường
-                const dojos = [...new Set(data.map(item => item['Võ đường']))];
-                dojos.forEach(dojo => {
-                    const option = document.createElement('option');
-                    option.value = dojo;
-                    option.textContent = dojo;
-                    filterDojoSelect.appendChild(option);
-                });
-            }
-
-            // Hàm lọc dữ liệu
-            function filterData() {
-                loadingIndicator.classList.add('hidden');
-                const dateFilter = filterDateSelect.value;
-                const dojoFilter = filterDojoSelect.value;
-                const studentFilter = filterStudentInput.value.toLowerCase().trim();
-
-                const filteredData = originalData.filter(row => {
-                    const dateMatch = !dateFilter || row['Date'] === dateFilter;
-                    const dojoMatch = !dojoFilter || row['Võ đường'] === dojoFilter;
-                    const studentMatch = !studentFilter || row['Học viên'].toLowerCase().includes(studentFilter);
-                    
-                    return dateMatch && dojoMatch && studentMatch;
-                });
-
-                displayData(filteredData);
-            }
-
-            // Hàm để hiển thị dữ liệu lên trang
-            function displayData(data) {
-                if (!data || data.length === 0) {
-                    dataContainer.innerHTML = '<p class="text-center text-gray-500 p-4">Không có dữ liệu để hiển thị.</p>';
+                // Kiểm tra xem dữ liệu có phải là mảng và không rỗng không
+                if (!Array.isArray(data) || data.length === 0) {
+                    loadingMessage.textContent = "Không có dữ liệu để hiển thị.";
                     return;
                 }
-
-                // Xử lý dữ liệu để tạo bảng chi tiết
-                const processedData = processData(data);
                 
-                let html = '<table class="min-w-full bg-white rounded-lg">';
+                // Ẩn thông báo đang tải
+                loadingMessage.classList.add('hidden');
 
-                // Tạo tiêu đề bảng (header)
-                html += '<thead><tr class="bg-blue-600 text-white">';
-                html += '<th class="py-3 px-4 text-left font-semibold">TT</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Năm tháng</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Tên học viên</th>';
-                for (let i = 1; i <= 31; i++) {
-                    html += `<th class="py-3 px-2 font-semibold text-center">${i}</th>`;
-                }
-                html += '<th class="py-3 px-4 text-left font-semibold">Đến muộn</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Học đúng giờ</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Về chùa công quả</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Nghi phép</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Không Phép</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Vắng mặt</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Học thử</th>';
-                html += '<th class="py-3 px-4 text-left font-semibold">Nghỉ hẳn</th>';
-                html += '</tr></thead>';
+                // Dòng đầu tiên là tiêu đề cột
+                const headers = data[0];
+                // Các dòng còn lại là dữ liệu
+                const rows = data.slice(1);
 
-                // Tạo nội dung bảng (body)
-                html += '<tbody>';
-                processedData.forEach((row, index) => {
-                    const rowClass = index % 2 === 0 ? 'bg-gray-100' : 'bg-white';
-                    html += `<tr class="${rowClass} hover:bg-gray-200 transition-colors duration-200">`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${index + 1}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Năm tháng']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Tên học viên']}</td>`;
-                    for (let i = 1; i <= 31; i++) {
-                        const dayStatus = row.days[i] ? row.days[i] : '';
-                        html += `<td class="py-3 px-2 border-b border-gray-200 text-center">${dayStatus}</td>`;
-                    }
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Đến muộn']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Học đúng giờ']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Về chùa công quả']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Nghi phép']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Không Phép']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Vắng mặt']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Học thử']}</td>`;
-                    html += `<td class="py-3 px-4 border-b border-gray-200">${row['Nghỉ hẳn']}</td>`;
-                    html += '</tr>';
+                // Tạo bảng và áp dụng các class Tailwind
+                const table = document.createElement('table');
+                table.className = "min-w-full divide-y divide-gray-200";
+
+                // Tạo phần đầu bảng (<thead>)
+                const thead = document.createElement('thead');
+                thead.className = "bg-gray-50";
+                const headerRow = document.createElement('tr');
+                headers.forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.scope = "col";
+                    th.className = "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
                 });
-                html += '</tbody>';
-                html += '</table>';
-                dataContainer.innerHTML = html;
-            }
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
 
-            // Hàm xử lý dữ liệu để tạo bảng chi tiết
-            function processData(data) {
-                const detailedData = {};
-                
-                data.forEach(item => {
-                    const date = item['Date'];
-                    const studentName = item['Học viên'];
-                    const key = `${date}-${studentName}`;
-
-                    if (!detailedData[key]) {
-                        detailedData[key] = {
-                            'Năm tháng': date,
-                            'Tên học viên': studentName,
-                            'Đến muộn': 0,
-                            'Học đúng giờ': 0,
-                            'Về chùa công quả': 0,
-                            'Nghi phép': 0,
-                            'Không Phép': 0,
-                            'Vắng mặt': 0,
-                            'Học thử': 0,
-                            'Nghỉ hẳn': 0,
-                            'days': {}
-                        };
+                // Tạo phần thân bảng (<tbody>)
+                const tbody = document.createElement('tbody');
+                tbody.className = "bg-white divide-y divide-gray-200";
+                rows.forEach((rowData, index) => {
+                    const row = document.createElement('tr');
+                    // Tạo kiểu sọc cho bảng
+                    if (index % 2 === 0) {
+                        row.className = "bg-white";
+                    } else {
+                        row.className = "bg-gray-50";
                     }
-
-                    const status = item['Trạng thái'];
-                    const day = item['Ngày'];
-
-                    // Cập nhật trạng thái cho ngày cụ thể
-                    detailedData[key].days[day] = status;
-
-                    // Tăng số lượng cho trạng thái tương ứng
-                    if (status) {
-                        detailedData[key][status] = (detailedData[key][status] || 0) + 1;
-                    }
+                    
+                    rowData.forEach(cellData => {
+                        const td = document.createElement('td');
+                        td.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500";
+                        td.textContent = cellData;
+                        row.appendChild(td);
+                    });
+                    tbody.appendChild(row);
                 });
-                
-                return Object.values(detailedData);
+                table.appendChild(tbody);
+
+                // Thêm bảng vào container
+                dataContainer.appendChild(table);
+
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu:", error);
+                loadingMessage.textContent = "Lỗi khi lấy dữ liệu. Vui lòng kiểm tra lại đường dẫn hoặc kết nối.";
             }
-
-            // Thêm sự kiện lắng nghe cho các bộ lọc
-            filterDateSelect.addEventListener('change', filterData);
-            filterDojoSelect.addEventListener('change', filterData);
-            filterStudentInput.addEventListener('input', filterData);
-
-            // Gọi hàm để lấy dữ liệu
-            fetchData();
-        });
+        }
     </script>
 </body>
 </html>
