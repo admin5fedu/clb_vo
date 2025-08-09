@@ -18,19 +18,29 @@
     zoom: 1.5;
   }
 
-  /* CSS cho in ấn - đảm bảo không cắt xén */
+  /* CSS cho in ấn - đảm bảo không cắt xén và căn nằm ngang trên A5 */
   @media print {
+    @page {
+      size: A5 landscape; /* Trang A5 nằm ngang */
+      margin: 0.5cm; /* Margin nhỏ để có nhiều không gian hơn */
+    }
+    
     body {
       zoom: 1; /* Reset zoom khi in */
       background-color: #fff;
       margin: 0;
       padding: 0;
+      justify-content: flex-start; /* Căn lên đầu trang */
+      align-items: flex-start; /* Căn lên đầu trang */
+      min-height: auto;
     }
     
     .id-card-container {
-      padding: 10px;
+      padding: 0;
       box-shadow: none;
       page-break-inside: avoid;
+      margin-top: 0; /* Đặt ở đầu trang */
+      background-color: transparent;
     }
     
     .action-buttons {
@@ -39,16 +49,18 @@
     
     .id-card {
       box-shadow: none;
-      border: 1px solid #000;
+      border: 2px solid #000;
       page-break-inside: avoid;
     }
   }
+
   .id-card-container {
     padding: 20px;
     background-color: #fff;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   }
+
   .id-card {
     /* Kích thước thẻ dọc: cao 8.5cm, rộng 5.5cm */
     width: 5.5cm;
@@ -62,6 +74,7 @@
     background-color: #fff;
     position: relative;
   }
+
   .logo-top-left {
     position: absolute;
     top: 5px;
@@ -70,91 +83,121 @@
     width: 25px;
     z-index: 10;
   }
+
   .logo-top-left img {
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
+
   .photo-section {
-    height: 4cm;
+    height: 4.2cm; /* Tăng một chút để có không gian cho ảnh */
     display: flex;
     justify-content: center;
-    align-items: flex-end; /* Căn dưới ảnh */
-    padding-top: 25px;
+    align-items: flex-start; /* Đổi từ flex-end thành flex-start để căn cao */
+    padding-top: 5px; /* Đặt = với top của logo để đỉnh ảnh ngang đỉnh logo */
+    flex-shrink: 0; /* Không cho co lại */
   }
+
   .photo-section img {
     /* Kích thước ảnh 3x4 */
     width: 3cm;
-    height: 4cm;
+    height: 3.8cm; /* Giảm một chút để vừa với container */
     object-fit: cover;
     border: 2px solid white;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
+
   .info-container {
-    flex-grow: 1;
+    flex: 1; /* Sử dụng flex thay vì flex-grow */
     background-color: #fff;
     color: #333;
-    padding: 8px;
+    padding: 5px 8px 8px 8px; /* Giảm padding-top từ 10px xuống 5px để tên học viên sát ảnh */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     text-align: center;
-    min-height: 4cm; /* Đảm bảo có đủ không gian */
+    min-height: 4cm;
+    overflow: hidden; /* Ngăn nội dung tràn ra ngoài */
   }
+
   .full-name {
     font-size: 13px;
     font-weight: bold;
     text-transform: uppercase;
-    margin-bottom: 8px;
-    line-height: 1.2;
+    margin-bottom: 3px; /* Giảm từ 8px xuống 3px để sát với tên võ đường */
+    line-height: 1.1;
     overflow-wrap: break-word;
-  }
-  .info-details {
-    font-size: 11px;
-    line-height: 1.3;
-    margin-bottom: 8px;
+    word-break: break-word;
     flex-shrink: 0;
   }
-  .info-details p {
-    margin: 2px 0;
-  }
+
   .gym-name {
     font-weight: bold;
     text-transform: uppercase;
+    font-size: 11px;
+    margin-bottom: 10px;
+    margin-top: 0; /* Thêm để sát với tên học viên */
+    line-height: 1.1;
   }
-  .student-id-qr-row {
+
+  .bottom-info-row {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Căn giữa theo chiều dọc */
+    align-items: flex-start;
     width: 100%;
     margin-top: auto;
-    padding: 3px;
-    gap: 3px; /* Khoảng cách giữa mã học sinh và QR */
+    padding: 0;
+    gap: 8px;
+    flex-shrink: 0;
+    height: 2.2cm;
   }
-  .student-id {
-    font-size: 10px;
-    font-weight: bold;
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+
+  .info-left {
     flex: 1;
-    max-width: calc(100% - 2.2cm); /* Đảm bảo không chèn lên QR code */
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 3px;
   }
+
+  .info-left p {
+    font-size: 10px;
+    font-weight: normal; /* Đổi thành normal cho năm sinh và SĐT */
+    margin: 0;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .info-left p:last-child {
+    font-size: 11px; /* Mã học viên to hơn */
+    font-weight: bold; /* Mã học viên vẫn in đậm */
+  }
+
   .qr-code-container {
-    flex-shrink: 0; /* Ngăn QR code bị co lại */
+    flex-shrink: 0;
+    width: 2cm;
+    height: 2cm;
+    display: flex;
+    align-items: flex-end;
   }
+
   .qr-code-container img {
-    width: 2cm !important; /* Cố định kích thước QR code là 2cm */
-    height: 2cm !important; /* Cố định kích thước QR code là 2cm */
-    object-fit: contain; /* Đảm bảo QR code không bị méo */
+    width: 2cm !important;
+    height: 2cm !important;
+    object-fit: contain;
+    display: block;
   }
+
   .action-buttons {
     margin-top: 20px;
     display: flex;
     gap: 10px;
   }
+
   .action-buttons button {
     padding: 10px 15px;
     font-size: 14px;
@@ -164,9 +207,11 @@
     color: white;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
+
   #print-btn {
     background-color: #007bff;
   }
+
   #download-btn {
     background-color: #28a745;
   }
@@ -189,13 +234,14 @@
     <!-- Phần thông tin và mã QR -->
     <div class="info-container">
       <p class="full-name" id="full-name-field">NGUYỄN VĂN AN</p>
-      <div class="info-details">
-        <p id="dob-field">Sinh năm: 1995</p>
-        <p id="phone-field">SĐT: 0912345678</p>
-        <p class="gym-name" id="gym-field">VÕ ĐƯỜNG THIẾU LÂM</p>
-      </div>
-      <div class="student-id-qr-row">
-        <p class="student-id" id="student-id-field">HV001234</p>
+      <p class="gym-name" id="gym-field">VÕ ĐƯỜNG THIẾU LÂM</p>
+      
+      <div class="bottom-info-row">
+        <div class="info-left">
+          <p id="dob-field">1995</p>
+          <p id="phone-field">0912345678</p>
+          <p id="student-id-field">HV001234</p>
+        </div>
         <div class="qr-code-container">
           <img id="qr-code" src="https://via.placeholder.com/200/fff/000?text=QR" alt="Mã QR">
         </div>
@@ -260,10 +306,25 @@
             document.getElementById('logo-image').src = logoUrl;
         }
 
-        // Tải PDF khi nhấn nút
+        // Tải PDF khi nhấn nút với cấu hình tốt hơn
         document.getElementById('download-btn').addEventListener('click', () => {
             const element = document.getElementById('id-card-content');
-            html2pdf().from(element).save('the_hoc_vien.pdf');
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5], // Margin trong cm
+                filename: 'the_hoc_vien.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 3, // Tăng độ phân giải
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'cm', 
+                    format: [21, 14.8], // A5 nằm ngang (21cm x 14.8cm)
+                    orientation: 'landscape'
+                }
+            };
+            html2pdf().set(opt).from(element).save();
         });
     });
 </script>
