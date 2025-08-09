@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiển thị Dữ liệu có Bộ Lọc</title>
+    <title>Điểm danh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -20,8 +20,10 @@
         <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
                 <label for="filter-date" class="block text-sm font-medium text-gray-700">Năm tháng</label>
-                <input type="text" id="filter-date" placeholder="YYYY-MM (Ví dụ: 2024-05)"
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                <select id="filter-date"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                    <option value="">-- Tất cả Năm tháng --</option>
+                </select>
             </div>
             <div>
                 <label for="filter-dojo" class="block text-sm font-medium text-gray-700">Võ đường</label>
@@ -51,10 +53,11 @@
             const dataContainer = document.getElementById('data-container');
             const loadingIndicator = document.getElementById('loading');
             const errorMessage = document.getElementById('error-message');
-            const url = 'https://script.google.com/macros/s/AKfycbzmpfqfGmiKU1C9T6En2u6DXckf3Xa0_gkTtfRUGxomf5R79BtPVEGnxn6KB0VkhWrp/exec';
+            // Cập nhật URL webapp mới
+            const url = 'https://script.google.com/macros/s/AKfycbwx3TSJYH5WVZP5lE-fqeUx2N-gkIxDi9Ljzb4ZRlVmxlu-8iaZ8pZWRzGSVCmlzk_i/exec';
 
             // Các phần tử lọc
-            const filterDateInput = document.getElementById('filter-date');
+            const filterDateSelect = document.getElementById('filter-date');
             const filterDojoSelect = document.getElementById('filter-dojo');
             const filterStudentInput = document.getElementById('filter-student');
             let originalData = [];
@@ -79,6 +82,23 @@
 
             // Hàm để điền dữ liệu cho các bộ lọc
             function populateFilters(data) {
+                // Lọc và điền dữ liệu cho dropdown Năm tháng
+                const dates = [...new Set(data.map(item => item['Date']))];
+                dates.sort().reverse(); // Sắp xếp từ Z đến A
+                dates.forEach(date => {
+                    const option = document.createElement('option');
+                    option.value = date;
+                    option.textContent = date;
+                    filterDateSelect.appendChild(option);
+                });
+
+                // Tự động chọn năm tháng hiện tại
+                const now = new Date();
+                const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+                const currentDateString = `${now.getFullYear()}/${currentMonth}`;
+                filterDateSelect.value = currentDateString;
+
+                // Lọc và điền dữ liệu cho dropdown Võ đường
                 const dojos = [...new Set(data.map(item => item['Võ đường']))];
                 dojos.forEach(dojo => {
                     const option = document.createElement('option');
@@ -91,13 +111,13 @@
             // Hàm lọc dữ liệu
             function filterData() {
                 loadingIndicator.classList.add('hidden');
-                const dateFilter = filterDateInput.value.toLowerCase().trim();
+                const dateFilter = filterDateSelect.value;
                 const dojoFilter = filterDojoSelect.value;
                 const studentFilter = filterStudentInput.value.toLowerCase().trim();
 
                 const filteredData = originalData.filter(row => {
-                    // Lọc theo Năm tháng (YYYY-MM)
-                    const dateMatch = !dateFilter || row['Date'].toLowerCase().startsWith(dateFilter);
+                    // Lọc theo Năm tháng (YYYY/MM)
+                    const dateMatch = !dateFilter || row['Date'] === dateFilter;
 
                     // Lọc theo Võ đường
                     const dojoMatch = !dojoFilter || row['Võ đường'] === dojoFilter;
@@ -144,7 +164,7 @@
             }
 
             // Thêm sự kiện lắng nghe cho các bộ lọc
-            filterDateInput.addEventListener('input', filterData);
+            filterDateSelect.addEventListener('change', filterData);
             filterDojoSelect.addEventListener('change', filterData);
             filterStudentInput.addEventListener('input', filterData);
 
