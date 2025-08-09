@@ -82,27 +82,36 @@
     margin-bottom: 10px;
   }
   .info-details {
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.4;
     margin-bottom: 10px;
   }
   .info-details p {
     margin: 2px 0;
   }
+  .gym-name {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
   .student-id-qr-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-top: auto; /* Đẩy xuống cuối container */
+    margin-top: auto;
+    padding-top: 5px;
   }
   .student-id {
     font-size: 12px;
     font-weight: bold;
+    text-align: left;
+  }
+  .qr-code-container {
+    padding: 0;
   }
   .qr-code-container img {
-    width: 60px;
-    height: 60px;
+    width: 80px; /* Cập nhật kích thước QR code để không bị cắt */
+    height: 80px; /* Cập nhật kích thước QR code để không bị cắt */
   }
   .action-buttons {
     margin-top: 20px;
@@ -146,7 +155,7 @@
       <div class="info-details">
         <p id="dob-field">[Năm sinh]</p>
         <p id="phone-field">[Số điện thoại]</p>
-        <p id="gym-field">[Võ đường]</p>
+        <p class="gym-name" id="gym-field">[VÕ ĐƯỜNG]</p>
       </div>
       <div class="student-id-qr-row">
         <p class="student-id" id="student-id-field">[MÃ HỌC SINH]</p>
@@ -196,7 +205,7 @@
 
         const gym = getUrlParam('gym');
         if (gym) {
-            document.getElementById('gym-field').textContent = gym;
+            document.getElementById('gym-field').textContent = gym.toUpperCase();
         }
 
         const photoUrl = getUrlParam('photo');
